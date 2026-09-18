@@ -11,3 +11,7 @@ build/
 **/Flutter/flutter_export_environment.sh
 **/xcuserdata/
 .DS_Store
+
+# IDE
+.idea/
+*.iml
