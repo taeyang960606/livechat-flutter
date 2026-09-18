@@ -69,9 +69,9 @@ abstract final class LiveChat {
     if (_history == null) {
       _history = LocalHistoryEntry(
         onRemove: () {
+          _session?.dismissKeyboard();
           _history = null;
           _session?.setShown(false);
-          _session?.dismissKeyboard();
         },
       );
       route.addLocalHistoryEntry(_history!);
@@ -81,11 +81,10 @@ abstract final class LiveChat {
   }
 
   static void hide() {
+    _session?.dismissKeyboard();
     _history?.remove();
     _history = null;
     _session?.setShown(false);
-    _session?.dismissKeyboard();
-    FocusManager.instance.primaryFocus?.unfocus();
   }
 
   static Future<void> setCustomerInfo({
@@ -148,15 +147,25 @@ class _ChatSession extends ChangeNotifier {
   /// FocusManager only handles Flutter focus, so blur the active DOM element
   /// and hide the platform IME explicitly when the chat is dismissed.
   void dismissKeyboard() {
+    // The keyboard is raised by the WebView's focused HTML input, which is
+    // often nested inside an iframe. Blur the innermost focused element so the
+    // WebView tells the platform IME to close. FocusManager/TextInput.hide only
+    // affect Flutter's own input connection, not the WebView's.
     try {
       controller?.runJavaScript(
-        'if (document.activeElement && document.activeElement.blur) { '
-        'document.activeElement.blur(); }',
+        '(function(){try{'
+        'function b(d){var a=d&&d.activeElement;if(!a)return;'
+        "if(a.tagName==='IFRAME'){try{b(a.contentDocument);}catch(e){}}"
+        'if(a&&a.blur){a.blur();}}'
+        'b(document);'
+        'if(document.body&&document.body.focus){document.body.focus();}'
+        '}catch(e){}})();',
       );
     } catch (_) {
       /* Controller not ready; nothing focused to blur. */
     }
     SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 
   Future<void> start() => _starting ??= _start();

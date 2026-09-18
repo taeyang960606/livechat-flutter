@@ -5,6 +5,8 @@
 - Dismiss the WebView's soft keyboard when the chat is closed (blur the focused
   HTML input and hide the platform IME), so the keyboard no longer stays open
   after the host is hidden or system-back is pressed.
+- Make keyboard dismissal reliable when the chat input is nested in an iframe
+  (blur the innermost focused element before the host is hidden).
 
 - First tagged release. Same feature set as 0.1.0, versioned for
   git-tag consumption (`ref: v1.0.0`).
