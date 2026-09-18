@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -70,6 +71,7 @@ abstract final class LiveChat {
         onRemove: () {
           _history = null;
           _session?.setShown(false);
+          _session?.dismissKeyboard();
         },
       );
       route.addLocalHistoryEntry(_history!);
@@ -82,6 +84,7 @@ abstract final class LiveChat {
     _history?.remove();
     _history = null;
     _session?.setShown(false);
+    _session?.dismissKeyboard();
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
@@ -139,6 +142,21 @@ class _ChatSession extends ChangeNotifier {
   void setShown(bool value) {
     shown = value;
     notifyListeners();
+  }
+
+  /// Closes the soft keyboard raised by the WebView's focused HTML input.
+  /// FocusManager only handles Flutter focus, so blur the active DOM element
+  /// and hide the platform IME explicitly when the chat is dismissed.
+  void dismissKeyboard() {
+    try {
+      controller?.runJavaScript(
+        'if (document.activeElement && document.activeElement.blur) { '
+        'document.activeElement.blur(); }',
+      );
+    } catch (_) {
+      /* Controller not ready; nothing focused to blur. */
+    }
+    SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
   }
 
   Future<void> start() => _starting ??= _start();
