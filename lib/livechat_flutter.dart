@@ -33,6 +33,12 @@ abstract final class LiveChat {
   static String loadErrorTitle = 'Chat unavailable';
   static String loadErrorMessage = 'Check your connection and try again.';
   static String loadErrorRetryTitle = 'Retry';
+
+  /// When true, and a member has been identified with a name, the SDK fills the
+  /// widget's pre-chat "name/username" field from the identity after the widget
+  /// is ready (best-effort; some deployments render this field via a shadow DOM
+  /// pre-chat form that `identify` alone does not pre-fill). Off by default.
+  static bool autoFillPreChatName = false;
   static bool get isInitialized => _session != null;
   static _ChatSession get _required =>
       _session ??
@@ -141,6 +147,52 @@ class _ChatSession extends ChangeNotifier {
   void setShown(bool value) {
     shown = value;
     notifyListeners();
+  }
+
+  /// Best-effort: fill the widget's pre-chat name/username field from the
+  /// identified member's name. Runs in the page (piercing shadow DOM), retries
+  /// briefly for late-rendered forms, and uses a React-compatible value setter.
+  /// A no-op when there is no identified name or no such field (e.g. widgets
+  /// with the pre-chat name form disabled).
+  Future<void> _prefillPreChatName() async {
+    const script = r"""
+(function(){
+  try{
+    var lc = window.LiveChat;
+    if(!lc || !lc.getState) return;
+    function run(tries){
+      var id = (lc.getState && lc.getState().memberIdentity) || null;
+      var name = id && id.name;
+      if(!name){ return; }
+      function deep(sel){
+        var out=[];
+        (function walk(root){
+          try{ root.querySelectorAll(sel).forEach(function(e){out.push(e);}); }catch(e){}
+          root.querySelectorAll('*').forEach(function(e){ if(e.shadowRoot) walk(e.shadowRoot); });
+        })(document);
+        return out;
+      }
+      var input = deep('input[type=text]')[0];
+      if(input){
+        if(!input.value){
+          var d = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
+          d.set.call(input, name);
+          input.dispatchEvent(new Event('input', {bubbles:true}));
+          input.dispatchEvent(new Event('change', {bubbles:true}));
+        }
+        return;
+      }
+      if(tries < 20){ setTimeout(function(){ run(tries+1); }, 150); }
+    }
+    run(0);
+  }catch(e){}
+})();
+""";
+    try {
+      await controller?.runJavaScript(script);
+    } catch (_) {
+      /* WebView not ready; nothing to fill. */
+    }
   }
 
   /// Closes the soft keyboard raised by the WebView's focused HTML input.
@@ -348,6 +400,7 @@ class _ChatSession extends ChangeNotifier {
           _timeout?.cancel();
           loading = false;
           notifyListeners();
+          if (LiveChat.autoFillPreChatName) unawaited(_prefillPreChatName());
         case 'message':
           final data = event['message'];
           if (data is Map<String, dynamic>) {

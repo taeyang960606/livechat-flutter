@@ -7,6 +7,9 @@
   after the host is hidden or system-back is pressed.
 - Make keyboard dismissal reliable when the chat input is nested in an iframe
   (blur the innermost focused element before the host is hidden).
+- Add opt-in `LiveChat.autoFillPreChatName` to pre-fill the widget's pre-chat
+  name/username field from the identified member (for deployments that force
+  `requireVisitorName`).
 
 - First tagged release. Same feature set as 0.1.0, versioned for
   git-tag consumption (`ref: v1.0.0`).
