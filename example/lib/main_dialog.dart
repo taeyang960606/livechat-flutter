@@ -114,6 +114,8 @@ class DialogHomePage extends StatelessWidget {
                       externalId: 'demo-member-123',
                       name: 'Demo Member',
                       email: 'member@example.test',
+                      phone: '+60123456789',
+                      rank: 'VIP 1',
                       customParams: {'plan': 'vip'},
                     );
                     status.value = 'Member identity saved';

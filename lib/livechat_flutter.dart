@@ -93,15 +93,27 @@ abstract final class LiveChat {
     _session?.setShown(false);
   }
 
+  /// Identifies the signed-in app member to the chat widget.
+  ///
+  /// [externalId] must be the same member ID your website uses, so the app and
+  /// the web chat resolve to the same member. [phone] lands in the member's
+  /// phone field; do not put it in [name] or [customParams]. [rank] is the
+  /// member rank code as set up under Member Ranks in the admin (`Regular`,
+  /// `VIP 1`, ...; case does not matter); leaving it out keeps the rank
+  /// already recorded. [customParams] become conversation attributes.
   static Future<void> setCustomerInfo({
     required String externalId,
     String? name,
     String? email,
     Map<String, String> customParams = const {},
+    String? phone,
+    String? rank,
   }) => _required.identity.identify(
     externalId: externalId,
     name: name,
     email: email,
+    phone: phone,
+    rank: rank,
     customParams: customParams,
   );
 

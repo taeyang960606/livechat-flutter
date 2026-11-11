@@ -29,6 +29,8 @@ class ChatIdentity {
     required String externalId,
     String? name,
     String? email,
+    String? phone,
+    String? rank,
     Map<String, String> customParams = const {},
   }) {
     if (externalId.trim().isEmpty) {
@@ -38,6 +40,8 @@ class ChatIdentity {
       'externalId': externalId,
       'name': ?name,
       'email': ?email,
+      'phone': ?phone,
+      'rank': ?rank,
     };
     final attributes = Map<String, String>.of(customParams);
     return _enqueue(() async {

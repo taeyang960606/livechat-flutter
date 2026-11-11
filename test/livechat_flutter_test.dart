@@ -150,6 +150,38 @@ void main() {
         expect(calls.single, contains(jsonEncode(hostile)));
       },
     );
+    Map<String, dynamic> identifyPayload(String script) {
+      final args = script.substring(
+        script.indexOf('[') + 1,
+        script.lastIndexOf(']'),
+      );
+      return jsonDecode(args) as Map<String, dynamic>;
+    }
+
+    test('phone and rank are passed to identify when set', () async {
+      await identity.identify(
+        externalId: 'member-123',
+        name: 'Member',
+        phone: '+60123456789',
+        rank: 'VIP 1',
+        customParams: {'plan': 'vip'},
+      );
+      await identity.onReady();
+      expect(identifyPayload(calls.first), {
+        'externalId': 'member-123',
+        'name': 'Member',
+        'phone': '+60123456789',
+        'rank': 'VIP 1',
+      });
+      expect(calls.last, contains("'setAttributes'"));
+      expect(calls.last, isNot(contains('rank')));
+      expect(calls.last, isNot(contains('phone')));
+    });
+    test('phone and rank are omitted from identify when unset', () async {
+      await identity.identify(externalId: 'member-123');
+      await identity.onReady();
+      expect(identifyPayload(calls.single), {'externalId': 'member-123'});
+    });
     test(
       'sign-out removes the remembered customer on future page loads',
       () async {

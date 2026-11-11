@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- `LiveChat.setCustomerInfo` takes optional `phone` and `rank`, passed to the
+  widget's `identify` when set, so app members carry their member rank and
+  phone like website members do. Existing calls compile unchanged.
+
 ## 1.0.0 — 2026-09-18
 
 - Dismiss the WebView's soft keyboard when the chat is closed (blur the focused

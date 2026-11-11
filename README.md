@@ -88,15 +88,29 @@ await LiveChat.setCustomerInfo(
   externalId: 'member-123',
   name: 'Member Customer',
   email: 'member@example.test',
-  customParams: {'plan': 'vip'},
+  phone: '+60123456789',
+  rank: 'VIP 1',
 );
 
 // Call and await from your app's own sign-out flow.
 await LiveChat.signOutCustomer();
 ```
 
-`externalId` is required. Identity is remembered in memory and applied when the
-widget emits `ready`. Restore the current app member at startup after initialize.
+`externalId` is required.
+
+- Use the same `externalId` your website sends for this member, so the app and
+  the site share one member record.
+- Always pass `rank`. It must match a code under **Member Ranks** in the
+  LiveChat admin (`Regular`, `VIP 1` … `VIP 6`; case does not matter). Without
+  it, operators see the member with no rank. Leaving it out keeps the rank
+  already recorded.
+- `phone` goes to the member's phone field. Don't pass the phone number as
+  `name` or inside `customParams`.
+- `customParams` is for anything else; it is stored as conversation attributes,
+  not as phone or rank.
+
+Identity is remembered in memory and applied when the widget emits `ready`.
+Restore the current app member at startup after initialize.
 A pending sign-out is saved per deployment/merchant and replayed **before** the
 next identify call. A failed reset leaves the pending flag intact for retry.
 Sign-out before initialization is a no-op, matching Android.
