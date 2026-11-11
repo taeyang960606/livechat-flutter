@@ -1,10 +1,13 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 — 2026-11-11
 
 - `LiveChat.setCustomerInfo` takes optional `phone` and `rank`, passed to the
   widget's `identify` when set, so app members carry their member rank and
   phone like website members do. Existing calls compile unchanged.
+- Add opt-in `LiveChat.autoFillPreChatName` to pre-fill the widget's pre-chat
+  name/username field from the identified member (for deployments that force
+  `requireVisitorName`).
 
 ## 1.0.0 — 2026-09-18
 
@@ -13,9 +16,6 @@
   after the host is hidden or system-back is pressed.
 - Make keyboard dismissal reliable when the chat input is nested in an iframe
   (blur the innermost focused element before the host is hidden).
-- Add opt-in `LiveChat.autoFillPreChatName` to pre-fill the widget's pre-chat
-  name/username field from the identified member (for deployments that force
-  `requireVisitorName`).
 
 - First tagged release. Same feature set as 0.1.0, versioned for
   git-tag consumption (`ref: v1.0.0`).
